@@ -1,0 +1,203 @@
+{% extends 'cageInventory/base.html' %}
+{% block dbactive %}
+class="active"
+{% endblock %}
+{% block content %}
+
+<!-- Page Heading -->
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">
+            Dashboard <small>Statistics Overview</small>
+        </h1>
+        <ol class="breadcrumb">
+            <li class="active">
+                <i class="fa fa-dashboard"></i> Dashboard
+            </li>
+        </ol>
+    </div>
+</div>
+<!-- /.row -->
+
+<div class="row">
+    <div class="col-lg-12">
+        <!--<div class="alert alert-info alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+            <i class="fa fa-info-circle"></i>  <strong>Like SB Admin?</strong> Try out <a href="http://startbootstrap.com/template-overviews/sb-admin-2" class="alert-link">SB Admin 2</a> for additional features!
+        </div> -->
+    </div>
+</div>
+<!-- /.row -->
+
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-fw fa-bar-chart-o fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge" id="totalnum">{{total}}</div>
+                        <div>Total Items in Inventory</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/all/">
+                <div class="panel-footer">
+                    <span class="pull-left">View Details</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-green">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-check-square-o fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge" id="innum">{{in}}</div>
+                        <div>Items Checked In</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/in/">
+                <div class="panel-footer">
+                    <span class="pull-left">View Details</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-yellow">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-shopping-cart fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge" id="outnum">{{out}}</div>
+                        <div>Items Checked Out</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/out/">
+                <div class="panel-footer">
+                    <span class="pull-left">View Details</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6">
+        <div class="panel panel-red">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-xs-3">
+                        <i class="fa fa-times fa-5x"></i>
+                    </div>
+                    <div class="col-xs-9 text-right">
+                        <div class="huge" id="missingnum">{{missing}}</div>
+                        <div>Items Missing</div>
+                    </div>
+                </div>
+            </div>
+            <a href="/missing/">
+                <div class="panel-footer">
+                    <span class="pull-left">View Details</span>
+                    <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                    <div class="clearfix"></div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-bar-chart-o fa-fw"></i> Activity</h3>
+            </div>
+            <div class="panel-body">
+                <div id="morris-area-chart"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-money fa-fw"></i> Transactions</h3>
+            </div>
+            <div class="panel-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Student </th>
+                                <th>Item </th>
+                                <th>Borrow Start</th>
+                                <th>Borrow Stop</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trans in transactions %}
+                            <tr id="tr{{forloop.counter}}">
+                                <td class="item0">{{trans.id}}</td>
+                                <td class="item1">{{trans.student}}</td>
+                                <td class="item2">{{trans.this_item}}</td>
+                                <td class="item3">{{trans.start_date}}</td>
+                                <td class="item4">{{trans.end_date}}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                            <td colspan="5">No transactions have been recorded</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-right">
+                    <a href="/transactions/">View All Transactions <i class="fa fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /.row -->
+{% endblock %}
+{% block scriptdata %}
+<script>
+var graph = Morris.Area({
+    element:'morris-area-chart',
+    xkey:'period',
+    ykeys:['out','in'],
+    labels:['Sign-outs','Returns'],
+    lineColors:['orange','green'],
+    pointSize:2,
+    hideHover:'auto',
+    resize:true,
+    behaveLikeLine:true,
+    fillOpacity: 0.2,
+    data:[{'period':'0000-00-00 00:00:00','out':0,'in':0}]
+});
+
+$(document).ready(function(){
+    getGraphData();
+    setInterval('getGraphData()',300000);
+});
+</script>
+{% endblock %}

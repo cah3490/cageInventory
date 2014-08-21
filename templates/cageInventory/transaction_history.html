@@ -1,0 +1,37 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-money fa-fw"></i> Transaction History</h3>
+    </div>
+    <div class="panel-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Date Borrowed </th>
+                        <th>Date Returned </th>
+                        <th>Item </th>
+                        <th>Student </th>
+                        <th>Signature</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in trans %}
+                    <tr>
+                        <td><a href="/transaction/{{item.id}}/">{{item.id}}</a></td>
+                        <td>{{item.start_date}}</td>
+                        <td>{% if item.end_date %}{{item.end_date}}{% else %}<i class="fa fa-minus"></i>{% endif %}</td>
+                        <td><a href="/item/{{item.this_item.id}}/">{{item.this_item}}</a></td>
+                        <td><a href="/student/{{item.student.id}}/">{{item.student}}</a></td>
+                        <td>{% if item.signature %} <i class="fa fa-check"></i> {% else %}<i class="fa fa-minus"></i>{% endif %}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                    <td colspan="6">No transactions have been logged</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

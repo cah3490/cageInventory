@@ -1,0 +1,264 @@
+{% load static from staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Cage Loaning System</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="{% static 'css/sb-admin.css' %}" rel="stylesheet">
+
+    <!-- Morris Charts CSS -->
+    <link href="{% static 'css/plugins/morris.css' %}" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="{% static 'font-awesome-4.1.0/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+
+     <!-- jQuery Version 1.11.0 -->
+    <script src="{% static 'js/jquery-1.11.0.js' %}"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+
+    <!-- Morris Charts JavaScript -->
+    <script src="{% static 'js/plugins/morris/raphael.min.js' %}"></script>
+    <script src="{% static 'js/plugins/morris/morris.min.js'  %}"></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery for check in / out -->
+    <script>
+    function getDashboardData(){
+    $.ajax({
+        type: "GET",
+        url: "/dashdata/",
+    }).done(function(data){
+            var newdata = JSON.parse(data);
+            $('#totalnum').html(newdata.totalnum);
+            $('#innum').html(newdata.innum);
+            $('#outnum').html(newdata.outnum);
+            $('#missingnum').html(newdata.missingnum);
+            for (var x = 1; x < 11; x++){
+                var this_row = $('#tr'+(x));
+                var this_input = newdata.trans[x-1]
+                this_row.find('.item0').html(this_input.tid);
+                this_row.find('.item1').html(this_input.student);
+                this_row.find('.item2').html(this_input.this_item);
+                this_row.find('.item3').html(this_input.start_date);
+                this_row.find('.item4').html(this_input.end_date);
+            }
+        });
+    };
+    getGraphData = function(){
+    $.ajax({
+        type: "GET",
+        url: "/graphdata/",
+    }).done(function(data){
+            // Area Chart
+            graph.setData(data);
+        });
+    };
+    $(document).ready(function(){
+        $('#item-id').keyup(function(event){
+            if(event.which == 13){
+                $('#uid').focus();
+            }
+        });
+        $('#uid').keyup(function(event){
+            if(event.which == 13){
+                $.ajax({
+                    type: "GET",
+                    url: "/check_in_out/" + $('#item-id').val() + "/" + $('#uid').val() + "/",
+                })
+                .done(function(data){
+                    if(window.location.pathname.indexOf("/") < 0){
+                        getGraphData();
+                        getDashboardData();
+                    } else if (window.location.pathname.indexOf('/in') > -1){
+                        $.ajax({
+                            type: "GET",
+                            url: "/in/"
+                        })
+                        .done(function(data){
+                            var newdata = JSON.parse(data);
+                            $('#content-container').html(newdata.rendered);
+                        });
+                    } else if (window.location.pathname.indexOf('/out') > -1){
+                        $.ajax({
+                            type: "GET",
+                            url: "/out/"
+                        })
+                        .done(function(data){
+                            var newdata = JSON.parse(data);
+                            $('#content-container').html(newdata.rendered);
+                        });
+                    } else if (window.location.pathname.indexOf('/transactions') > -1){
+                        $.ajax({
+                            type: "GET",
+                            url: "/transactions/"
+                        })
+                        .done(function(data){
+                            var newdata = JSON.parse(data);
+                            $('#content-container').html(newdata.rendered);
+                        });
+                    } else if (window.location.pathname.indexOf('/all') > -1){
+                        $.ajax({
+                            type: "GET",
+                            url: "/all/"
+                        })
+                        .done(function(data){
+                            var newdata = JSON.parse(data);
+                            $('#content-container').html(newdata.rendered);
+                        });
+                    }
+                    var newdata = JSON.parse(data);
+                    /* Update shit with ajax */
+                    if(newdata.resp == 'good'){
+                        $('#item-id').focus();
+                        $('#item-id').val('');
+                        $('#uid').val('');
+                        $('#checkdiv').addClass('has-success');
+                        $('#labelspot').append('<label id="addlabel" class="control-label" for="inputSuccess"> Checked out! </label>');
+                        setTimeout(function(){
+                            $('#labelspot').html('');
+                            $('#checkdiv').removeClass('has-success');
+                        },3000);
+                    } else if (newdata.resp == 'back'){
+                        $('#item-id').focus();
+                        $('#item-id').val('');
+                        $('#uid').val('');
+                        $('#checkdiv').addClass('has-success');
+                        $('#labelspot').append('<label id="addlabel" class="control-label" for="inputSuccess"> Successfully Returned! </label>');
+                        setTimeout(function(){
+                            $('#labelspot').html('');
+                            $('#checkdiv').removeClass('has-success');
+                        },3000);
+                    } else if (newdata.resp == 'bad_item'){
+                        $('#item-id').focus();
+                        $('#item-id').val('');
+                        $('#uid').val('');
+                        $('#checkdiv').addClass('has-error');
+                        $('#labelspot').append('<label id="addlabel" class="control-label" for="inputError"> Bad Item ID </label>');
+                        setTimeout(function(){
+                            $('#labelspot').html('');
+                            $('#checkdiv').removeClass('has-error');
+                        },3000);
+                    } else if (newdata.resp == 'bad_uid'){
+                        $('#item-id').focus();
+                        $('#item-id').val('');
+                        $('#uid').val('');
+                        $('#checkdiv').addClass('has-error');
+                        $('#labelspot').append('<label id="addlabel" class="control-label" for="inputError"> Bad UID </label>');
+                        setTimeout(function(){
+                            $('#labelspot').html('');
+                            $('#checkdiv').removeClass('has-error');
+                        },3000);
+                    }
+                })
+                .fail(function(){
+                    $('#item-id').focus();
+                    $('#item-id').val('');
+                    $('#uid').val('');
+                    $('#checkdiv').addClass('has-error');
+                    $('#labelspot').append('<label id="addlabel" class="control-label" for="inputError"> Failed. </label>');
+                    setTimeout(function(){
+                        $('#labelspot').html('');
+                        $('#checkdiv').removeClass('has-error');
+                    },3000);
+                });
+            }
+        });
+    });
+
+    </script>
+</head>
+
+<body>
+
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Cage Loaning System</a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <!-- Use class .has-success, .has-warning, .has-error -->
+                <li>
+                    <div class="form-group" id="checkdiv" style="margin-top:1em">
+                        <span id="labelspot"><!--<label class="control-label" for="inputSuccess"> Checked out! </label>--></span>
+                        <input "form-control" type="text" placeholder="Item ID #"   id="item-id" autofocus>
+                        <input "form-control" type="text" placeholder="Student UID" id="uid">
+                    </div>
+                </li>
+            </ul>
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li {% block dbactive %}{% endblock %}>
+                        <a href="/"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li {% block allactive %}{% endblock %}>
+                        <a href="/all/"><i class="fa fa-fw fa-bar-chart-o"></i> All items</a>
+                    </li>
+                    <li {% block inactive %}{% endblock %}>
+                        <a href="/in/"><i class="fa fa-check-square-o"></i> Checked In</a>
+                    </li>
+                    <li {% block outactive %}{% endblock %}>
+                        <a href="/out/"><i class="fa fa-shopping-cart"></i> Checked Out</a>
+                    </li>
+                    <li {% block missactive %}{% endblock %}>
+                        <a href="/missing/"><i class="fa fa-times"></i> Missing</a>
+                    </li>
+                    <li {% block transactive %}{% endblock %}>
+                        <a href="/transactions/"><i class="fa fa-money fa-fw"></i> Transactions </a>
+                    </li>
+                    <li {% block studentactive %}{% endblock %}>
+                        <a href="/students/"><i class="fa fa-user"></i> Students </a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid" id="content-container">
+            {% block content %}
+            {% endblock %}
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- /#page-wrapper -->
+
+    </div>
+    <!-- /#wrapper -->
+
+    {% block scriptdata %}
+    {% endblock %}
+
+</body>
+
+</html>
